@@ -67,12 +67,15 @@ label {
 
 /* 인풋/셀렉트/텍스트영역 안 글자색 */
 input, textarea, select, subheader {
-    color: black !important;
+    color: #333 !important;
 }
 
 /* Streamlit selectbox 내부 텍스트 색 강제 */
 div[data-baseweb="select"] * {
-    color: black !important;
+    color: #333 !important;
+}
+div[data-baseweb="select"] * {
+    color: #333 !important;
 }
 </style>
 """
