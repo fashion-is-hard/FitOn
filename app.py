@@ -75,6 +75,10 @@ div[data-baseweb="select"] * {
     color: #333 !important;
 }
 
+div[data-baseweb="select"] input {
+    color: #222 !important;
+}
+
 </style>
 """
 st.markdown("""
