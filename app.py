@@ -67,16 +67,16 @@ label {
 
 /* 인풋/셀렉트/텍스트영역 안 글자색 */
 input, textarea, select {
-    color: white !important;
+    color: #333 !important;
 }
 
 /* ⭐ Selectbox 드롭다운 내부 텍스트 색 (가장 중요) */
 div[data-baseweb="select"] * {
-    color: white !important;
+    color: #333 !important;
 }
 
 div[data-baseweb="select"] input {
-    color: white !important;
+    color: #333 !important;
 }
 
 </style>
