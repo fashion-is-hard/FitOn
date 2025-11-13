@@ -211,13 +211,13 @@ def recommend_standard(pred_arm_mm, pred_knee_mm, pred_sho_mm):
 left, right = st.columns([1.1, 1.4])
 
 with left:
-    st.markdown("<div class='white-card'>", unsafe_allow_html=True)
+    #st.markdown("<div class='white-card'>", unsafe_allow_html=True)
     st.subheader("상품 정보")
     # 👉 GitHub 레포에 있는 실제 이미지 파일 사용
     # app.py와 같은 폴더에 "Gemini_Generated_Image_u57y6xu57y6xu57y.png" 가 있다고 가정
     st.image(
         "Gemini_Generated_Image_u57y6xu57y6xu57y.png",
-        caption="모던 유니섹스 코트",
+        #caption="모던 유니섹스 코트",
         use_column_width=True
     )
     st.markdown("**모던 유니섹스 코트 — CJ ONSTYLE Edition**")
