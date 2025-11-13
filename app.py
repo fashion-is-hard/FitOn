@@ -33,7 +33,7 @@ h1, h2, h3 {
 /* 일반 텍스트 */
 body, p, span, div {
     font-family: "Noto Sans KR", sans-serif;
-    color: gray;
+    color: white;
 }
 
 /* 카드 형태의 white container */
