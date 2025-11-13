@@ -60,23 +60,21 @@ body, p, span, div {
     opacity: 0.9;
 }
 
-/* 라벨은 네온 라임, 입력 텍스트는 진한 회색 */
+/* 라벨은 네온 라임 */
 label {
     color: #23EB96 !important;
 }
 
 /* 인풋/셀렉트/텍스트영역 안 글자색 */
-input, textarea, select, subheader {
+input, textarea, select {
     color: #333 !important;
 }
 
-/* Streamlit selectbox 내부 텍스트 색 강제 */
+/* ⭐ Selectbox 드롭다운 내부 텍스트 색 (가장 중요) */
 div[data-baseweb="select"] * {
     color: #333 !important;
 }
-div[data-baseweb="select"] * {
-    color: #333 !important;
-}
+
 </style>
 """
 
