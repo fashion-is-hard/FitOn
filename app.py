@@ -67,41 +67,20 @@ label {
 
 /* 인풋/셀렉트/텍스트영역 안 글자색 */
 input, textarea, select {
-    color: #333 !important;
+    color: white !important;
 }
 
 /* ⭐ Selectbox 드롭다운 내부 텍스트 색 (가장 중요) */
 div[data-baseweb="select"] * {
-    color: #333 !important;
+    color: white !important;
 }
 
 div[data-baseweb="select"] input {
-    color: #222 !important;
+    color: white !important;
 }
 
 </style>
 """
-st.markdown("""
-<style>
-div[data-baseweb="select"] span,
-div[data-baseweb="select"] div,
-div[data-baseweb="select"] li {
-    color: #222 !important;
-}
-
-ul[role="listbox"] li div {
-    color: #222 !important;
-}
-
-ul[role="listbox"] li:hover div {
-    color: #222 !important;
-}
-
-.css-1n76uvr, .css-1wfugli, .css-16idsys, .css-1oe5cao {
-    color: #222 !important;
-}
-</style>
-""", unsafe_allow_html=True)
 
 st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
 
