@@ -72,7 +72,7 @@ input, textarea, select, subheader {
 
 /* Streamlit selectbox 내부 텍스트 색 강제 */
 div[data-baseweb="select"] * {
-    color: #333 !important;
+    color: #23EB96 !important;
 }
 </style>
 """
@@ -225,7 +225,7 @@ with left:
     st.markdown("</div>", unsafe_allow_html=True)
 
 with right:
-    st.markdown("<div class='white-card'>", unsafe_allow_html=True)
+    #st.markdown("<div class='white-card'>", unsafe_allow_html=True)
     st.subheader("코트 SKU (사이즈 × 기장 = 21종)")
     st.dataframe(sku_df, use_container_width=True, hide_index=True)
     st.markdown("</div>", unsafe_allow_html=True)
