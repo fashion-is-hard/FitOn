@@ -66,7 +66,7 @@ label {
 }
 
 /* 인풋/셀렉트/텍스트영역 안 글자색 */
-input, textarea, select {
+input, textarea, select, subheader {
     color: #333 !important;
 }
 
