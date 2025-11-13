@@ -77,6 +77,27 @@ div[data-baseweb="select"] * {
 
 </style>
 """
+st.markdown("""
+<style>
+div[data-baseweb="select"] span,
+div[data-baseweb="select"] div,
+div[data-baseweb="select"] li {
+    color: #222 !important;
+}
+
+ul[role="listbox"] li div {
+    color: #222 !important;
+}
+
+ul[role="listbox"] li:hover div {
+    color: #222 !important;
+}
+
+.css-1n76uvr, .css-1wfugli, .css-16idsys, .css-1oe5cao {
+    color: #222 !important;
+}
+</style>
+""", unsafe_allow_html=True)
 
 st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
 
