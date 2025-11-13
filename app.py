@@ -1,7 +1,8 @@
-import pickle
 import pandas as pd
 import numpy as np
 import streamlit as st
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import GradientBoostingRegressor
 
 # ================================
 # 0. 페이지 설정
@@ -58,28 +59,72 @@ body, p, span, div {
 .stButton>button:hover {
     opacity: 0.9;
 }
-
-/* 테이블 여백 및 폰트 */
-.dataframe {
-    font-size: 0.9rem;
-}
-
-/* 입력 위젯 텍스트 색상 */
-label, .stTextInput, .stNumberInput, .stSelectbox {
-    color: white !important;
-}
 </style>
 """
 st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
 
-# ================================
-# 타이틀
-# ================================
 st.markdown("<h1>🧥 코트 사이즈 추천 (CJ ONSTYLE Edition)</h1>", unsafe_allow_html=True)
 st.write(" ")
 
 # ================================
-# 2. SKU 정의
+# 2. 데이터 & 모델 학습
+# ================================
+
+ARM_CSV_PATH  = "암홀둘레.csv"   # 암홀둘레가 들어있는 CSV
+KNEE_CSV_PATH = "무릎높이.csv"      # 무릎높이가 들어있는 CSV
+SHO_CSV_PATH  = "어깨너비.csv"  # 어깨너비가 들어있는 CSV
+
+FEATURE_COLS = ["성별", "나이", "키", "몸무게", "허리둘레", "발사이즈"]
+TARGET_ARM = "암홀둘레"
+TARGET_KNEE = "무릎높이"
+TARGET_SHO = "어깨너비"
+
+
+def train_model_from_csv(csv_path: str, target_col: str):
+    """단일 CSV에서 하나의 회귀모델 학습"""
+    df = pd.read_csv(csv_path)
+
+    # 성별 인코딩
+    data = df.copy()
+    sex_map = {"남": 1, "여": 0}
+    data["성별"] = data["성별"].map(sex_map)
+    data = data.dropna(subset=["성별"])
+
+    X = data[FEATURE_COLS]
+    y = data[target_col]
+
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.2, random_state=42
+    )
+
+    model = GradientBoostingRegressor(random_state=42)
+    model.fit(X_train, y_train)
+
+    # 필요하면 여기서 R2 등 찍어서 로그 보고 싶으면 계산 가능
+    # from sklearn.metrics import r2_score
+    # r2 = r2_score(y_test, model.predict(X_test))
+    # print(target_col, "R2:", r2)
+
+    return model
+
+
+@st.cache_resource
+def load_data_and_train():
+    """암홀/무릎/어깨 3개 CSV에서 각각 모델 학습"""
+    arm_model = train_model_from_csv(ARM_CSV_PATH, TARGET_ARM)
+    knee_model = train_model_from_csv(KNEE_CSV_PATH, TARGET_KNEE)
+    sho_model = train_model_from_csv(SHO_CSV_PATH, TARGET_SHO)
+    return arm_model, knee_model, sho_model
+
+
+try:
+    arm_model, knee_model, sho_model = load_data_and_train()
+except Exception as e:
+    st.error(f"데이터 로드/모델 학습 중 오류가 발생했습니다: {e}")
+    st.stop()
+
+# ================================
+# 3. SKU 정의
 # ================================
 size_order = ["XXS", "XS", "S", "M", "L", "XL", "XXL"]
 length_order = ["short", "medium", "long"]
@@ -98,29 +143,11 @@ length_spec = {
     "long": 1100
 }
 
-STANDARD_ALLOWANCE = (25, 15)
+STANDARD_ALLOWANCE = (25, 15)  # (암홀, 어깨)
 LENGTH_WEIGHT = 0.2
 ARM_WEIGHT    = 0.5
 SHO_WEIGHT    = 0.3
 
-# ================================
-# 모델 로드
-# ================================
-@st.cache_resource
-def load_models():
-    with open("armhole_model.pkl", "rb") as f:
-        arm_model_ = pickle.load(f)
-    with open("knee_model.pkl", "rb") as f:
-        knee_model_ = pickle.load(f)
-    with open("shoulder_model.pkl", "rb") as f:
-        sho_model_ = pickle.load(f)
-    return arm_model_, knee_model_, sho_model_
-
-arm_model, knee_model, sho_model = load_models()
-
-# ================================
-# SKU 테이블 생성
-# ================================
 def get_sku_table():
     rows = []
     for s in size_order:
@@ -130,15 +157,12 @@ def get_sku_table():
                 "Length": ln,
                 "Armhole(mm)": armhole_spec[s],
                 "Shoulder(mm)": shoulder_spec[s],
-                "Coat length(mm)": length_spec[ln]
+                "Coat length(mm)": length_spec[ln],
             })
     return pd.DataFrame(rows)
 
 sku_df = get_sku_table()
 
-# ================================
-# 추천 함수
-# ================================
 def recommend_standard(pred_arm_mm, pred_knee_mm, pred_sho_mm):
     ah_allow, sh_allow = STANDARD_ALLOWANCE
 
@@ -163,33 +187,33 @@ def recommend_standard(pred_arm_mm, pred_knee_mm, pred_sho_mm):
                 best_cost = cost
                 best = (s, Lname)
 
-    return best
-
+    return best  # (size, length)
 
 # ================================
-# 레이아웃 구성
+# 4. 레이아웃 (상품 카드 + SKU 표)
 # ================================
 left, right = st.columns([1.1, 1.4])
 
 with left:
     st.markdown("<div class='white-card'>", unsafe_allow_html=True)
     st.subheader("상품 정보")
-    st.image("https://placehold.co/600x800/7323B9/FFFFFF?text=COAT+IMAGE", caption="(이미지 교체 가능)")
+    st.image("https://placehold.co/600x800/7323B9/FFFFFF?text=COAT+IMAGE",
+             caption="(이미지 교체 가능)")
     st.markdown("**모던 유니섹스 코트 — CJ ONSTYLE Edition**")
     st.markdown("₩ 249,000")
     st.markdown("</div>", unsafe_allow_html=True)
 
 with right:
     st.markdown("<div class='white-card'>", unsafe_allow_html=True)
-    st.subheader("코트 SKU (21종)")
-    st.dataframe(sku_df, hide_index=True, use_container_width=True)
+    st.subheader("코트 SKU (사이즈 × 기장 = 21종)")
+    st.dataframe(sku_df, use_container_width=True, hide_index=True)
     st.markdown("</div>", unsafe_allow_html=True)
 
 st.write(" ")
 st.markdown("---")
 
 # ================================
-# 입력 폼
+# 5. 입력 폼
 # ================================
 st.subheader("신체 치수 입력")
 
@@ -197,51 +221,55 @@ with st.form("input_form"):
     c1, c2, c3 = st.columns(3)
     with c1:
         sex = st.selectbox("성별", ["여", "남"])
-        age = st.number_input("나이", min_value=10, max_value=100, value=28)
+        age = st.number_input("나이 (세)", 10, 100, 28)
     with c2:
         height_cm = st.number_input("키 (cm)", 140.0, 210.0, 165.0)
         weight_kg = st.number_input("몸무게 (kg)", 30.0, 150.0, 55.0)
     with c3:
-        waist_in = st.number_input("허리둘레 (inch)", 20.0, 60.0, 28.0)
-        foot_mm = st.number_input("발 사이즈 (mm)", 210, 300, 245)
+        waist_in = st.number_input("허리 사이즈 (인치)", 20.0, 60.0, 28.0, step=0.5)
+        foot_mm = st.number_input("발사이즈 (mm)", 210, 300, 245)
 
     submitted = st.form_submit_button("추천 결과 보기")
 
 # ================================
-# 예측 + 추천
+# 6. 예측 + 추천
 # ================================
 if submitted:
     sex_encoded = 1 if sex == "남" else 0
-    height_mm = height_cm * 10
+    height_mm = height_cm * 10.0
     waist_mm = waist_in * 25.4
 
     X = pd.DataFrame([{
         "성별": sex_encoded,
-        "나이": age,
-        "키": height_mm,
-        "몸무게": weight_kg,
-        "허리둘레": waist_mm,
-        "발사이즈": foot_mm
+        "나이": float(age),
+        "키": float(height_mm),
+        "몸무게": float(weight_kg),
+        "허리둘레": float(waist_mm),
+        "발사이즈": float(foot_mm),
     }])
 
-    pred_arm = float(arm_model.predict(X)[0])
-    pred_knee = float(knee_model.predict(X)[0])
-    pred_sho = float(sho_model.predict(X)[0])
+    # 예측
+    pred_arm_mm  = float(arm_model.predict(X)[0])
+    pred_knee_mm = float(knee_model.predict(X)[0])
+    pred_sho_mm  = float(sho_model.predict(X)[0])
 
-    pred_arm_cm = pred_arm / 10
-    pred_knee_cm = pred_knee / 10
-    pred_sho_cm = pred_sho / 10
+    pred_arm_cm  = round(pred_arm_mm / 10.0, 2)
+    pred_knee_cm = round(pred_knee_mm / 10.0, 2)
+    pred_sho_cm  = round(pred_sho_mm / 10.0, 2)
 
-    # 결과 표시
     st.markdown("<h3>📏 예측된 신체 치수</h3>", unsafe_allow_html=True)
     m1, m2, m3 = st.columns(3)
-    m1.metric("암홀둘레", f"{pred_arm_cm:.2f} cm")
-    m2.metric("무릎높이", f"{pred_knee_cm:.2f} cm")
-    m3.metric("어깨너비", f"{pred_sho_cm:.2f} cm")
+    m1.metric("암홀둘레", f"{pred_arm_cm} cm")
+    m2.metric("무릎높이", f"{pred_knee_cm} cm")
+    m3.metric("어깨너비", f"{pred_sho_cm} cm")
 
-    size, length = recommend_standard(pred_arm, pred_knee, pred_sho)
+    size, length_name = recommend_standard(pred_arm_mm, pred_knee_mm, pred_sho_mm)
 
     st.markdown("<h3>✨ 추천 코트 사이즈 (Standard Fit)</h3>", unsafe_allow_html=True)
-    st.success(f"**{size} / {length.capitalize()}** 사이즈가 가장 잘 맞아요!")
+    st.success(f"추천 사이즈: **{size} / {length_name.capitalize()}**")
+
+else:
+    st.info("신체 치수를 입력한 뒤 **'추천 결과 보기'** 버튼을 눌러주세요.")
+
 
 
