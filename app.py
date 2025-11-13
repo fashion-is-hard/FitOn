@@ -59,8 +59,24 @@ body, p, span, div {
 .stButton>button:hover {
     opacity: 0.9;
 }
+
+/* 라벨은 네온 라임, 입력 텍스트는 진한 회색 */
+label {
+    color: #23EB96 !important;
+}
+
+/* 인풋/셀렉트/텍스트영역 안 글자색 */
+input, textarea, select {
+    color: #333 !important;
+}
+
+/* Streamlit selectbox 내부 텍스트 색 강제 */
+div[data-baseweb="select"] * {
+    color: #333 !important;
+}
 </style>
 """
+
 st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
 
 st.markdown("<h1>🧥 코트 사이즈 추천 (CJ ONSTYLE Edition)</h1>", unsafe_allow_html=True)
@@ -197,8 +213,13 @@ left, right = st.columns([1.1, 1.4])
 with left:
     st.markdown("<div class='white-card'>", unsafe_allow_html=True)
     st.subheader("상품 정보")
-    st.image("https://placehold.co/600x800/7323B9/FFFFFF?text=COAT+IMAGE",
-             caption="(이미지 교체 가능)")
+    # 👉 GitHub 레포에 있는 실제 이미지 파일 사용
+    # app.py와 같은 폴더에 "Gemini_Generated_Image_u57y6xu57y6xu57y.png" 가 있다고 가정
+    st.image(
+        "Gemini_Generated_Image_u57y6xu57y6xu57y.png",
+        caption="모던 유니섹스 코트",
+        use_column_width=True
+    )
     st.markdown("**모던 유니섹스 코트 — CJ ONSTYLE Edition**")
     st.markdown("₩ 249,000")
     st.markdown("</div>", unsafe_allow_html=True)
